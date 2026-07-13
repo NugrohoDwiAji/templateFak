@@ -10,15 +10,21 @@ import { useIdentitas } from "@/hooks/useIdentitas";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface NavChild {
-  name: Record<string, string>;
+  name: { id: string; en: string; cn: string };
   href: string;
 }
 
-interface NavItem {
-  name: Record<string, string>;
-  href?: string;
-  children?: NavChild[];
+interface NavItemParent {
+  name: { id: string; en: string; cn: string };
+  children: NavChild[];
 }
+
+interface NavItemLink {
+  name: { id: string; en: string; cn: string };
+  href: string;
+}
+
+type NavItem = NavItemParent | NavItemLink;
 
 const navigation: NavItem[] = [
   { name: { id: "Beranda", en: "Home", cn: "首页" }, href: "/" },
@@ -74,7 +80,7 @@ function Header() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {navigation.map((item) =>
-            item.children ? (
+            "children" in item ? (
               <div
                 key={item.name.id}
                 className="relative"
@@ -147,7 +153,7 @@ function Header() {
         >
           <div className="space-y-1 px-4 py-3">
             {navigation.map((item) =>
-              item.children ? (
+              "children" in item ? (
                 <div key={item.name.id}>
                   <button
                     onClick={() =>

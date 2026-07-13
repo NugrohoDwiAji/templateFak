@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DosenSchema, type DosenInput } from "@/lib/validations";
+import type { Prisma } from "@prisma/client";
 
 export async function getDosen() {
   try {
@@ -33,7 +34,7 @@ export async function createDosen(data: DosenInput) {
     for (const [key, value] of Object.entries(validated)) {
       if (value) cleanData[key] = value;
     }
-    const dosen = await prisma.dosen.create({ data: cleanData });
+    const dosen = await prisma.dosen.create({ data: cleanData as Prisma.dosenCreateInput });
     revalidatePath("/admin/dosen");
     revalidatePath("/dosen");
     return { success: true, data: dosen };
@@ -54,7 +55,7 @@ export async function updateDosen(id: string, data: DosenInput) {
     }
     const dosen = await prisma.dosen.update({
       where: { id },
-      data: cleanData,
+      data: cleanData as Prisma.dosenUncheckedUpdateInput,
     });
     revalidatePath("/admin/dosen");
     revalidatePath("/dosen");

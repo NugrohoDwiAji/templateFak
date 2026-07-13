@@ -138,8 +138,12 @@ export default function IdentitasPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const allFields = [...allTextFields, ...bannerFields, ...visiMisiFieldKeys];
-      const promises = allFields.map((key) => {
+      const allFieldKeys = [
+        ...allTextFields.map((f) => f.key),
+        ...bannerFields.map((f) => f.key),
+        ...visiMisiFieldKeys,
+      ];
+      const promises = allFieldKeys.map((key) => {
         const value = values[key] || "";
         return setIdentitas(key, value);
       });

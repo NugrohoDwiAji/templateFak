@@ -17,6 +17,7 @@ import {
 import { uploadToStorage } from "@/actions/upload.actions";
 import { formatDate } from "@/lib/utils";
 import type { Dosen } from "@/types";
+import type { DosenInput } from "@/lib/validations";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function DosenPage() {
@@ -61,18 +62,24 @@ export default function DosenPage() {
     foto?: File;
   }) => {
     const { foto: _foto, ...restData } = data;
-    const formData: Record<string, string> = {};
-    for (const [key, value] of Object.entries(restData)) {
-      if (value) formData[key] = value;
-    }
+    const dosenData: DosenInput = {
+      nama: restData.nama,
+      nik: restData.nik,
+      jenis_dosen: restData.jenis_dosen,
+      nama_en: restData.nama_en || undefined,
+      nama_cn: restData.nama_cn || undefined,
+      kepakaran: restData.kepakaran || undefined,
+      kepakaran_en: restData.kepakaran_en || undefined,
+      kepakaran_cn: restData.kepakaran_cn || undefined,
+    };
 
     let result;
     if (editingDosen) {
-      const updateData: Record<string, string> = { ...formData };
+      const updateData: DosenInput = { ...dosenData };
       if (editingDosen.foto) updateData.foto = editingDosen.foto;
       result = await updateDosen(editingDosen.id, updateData);
     } else {
-      result = await createDosen(formData);
+      result = await createDosen(dosenData);
     }
 
     if (!result.success) {
@@ -83,7 +90,7 @@ export default function DosenPage() {
       const fotoPath = await uploadToStorage(data.foto, "dosen");
       if (fotoPath) {
         await updateDosen(result.data.id, {
-          ...formData,
+          ...dosenData,
           foto: fotoPath,
         });
       }

@@ -58,7 +58,17 @@ function DosenForm({ initialData, onSubmit, onCancel }: DosenFormProps) {
     }
 
     try {
-      const submitData: Record<string, string | File> = {
+      const submitData: {
+        nama: string;
+        nama_en: string;
+        nama_cn: string;
+        nik: string;
+        jenis_dosen: string;
+        kepakaran?: string;
+        kepakaran_en?: string;
+        kepakaran_cn?: string;
+        foto?: File;
+      } = {
         nama: form.nama,
         nama_en: form.nama,
         nama_cn: form.nama,
