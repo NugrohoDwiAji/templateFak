@@ -1,0 +1,237 @@
+generator client {
+  provider        = "prisma-client-js"
+  compilerBuild   = "fast"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================
+// AUTH MODELS (Auth.js)
+// ============================================
+
+model user {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  username      String    @unique
+  role          String    @default("user")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      account[]
+  sessions      session[]
+
+  @@map("users")
+}
+
+model account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.LongText
+  access_token      String? @db.LongText
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.LongText
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// CMS CONTENT MODELS (Multi-Bahasa)
+// ============================================
+
+model content {
+  id        String   @id @default(uuid())
+  title     String
+  title_en  String
+  title_cn  String
+  value     String   @db.LongText
+  value_en  String   @db.LongText
+  value_cn  String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contents")
+}
+
+model berita {
+  id             String   @id @default(uuid())
+  title          String
+  title_en       String
+  title_cn       String
+  description    String   @db.LongText
+  description_en String   @db.LongText
+  description_cn String   @db.LongText
+  filepath       String?
+  uploadat       DateTime @default(now())
+
+  @@map("berita")
+}
+
+model berkas {
+  id       String   @id @default(uuid())
+  title    String
+  filepath String
+  uploadat DateTime @default(now())
+
+  @@map("berkas")
+}
+
+model pengumuman {
+  id        String   @id @default(uuid())
+  title     String
+  title_en  String
+  title_cn  String
+  file_path String
+  uploadat  DateTime @default(now())
+
+  @@map("pengumuman")
+}
+
+model faq {
+  id          String   @id @default(uuid())
+  question    String   @db.LongText
+  question_en String   @db.LongText
+  question_cn String   @db.LongText
+  answer      String   @db.LongText
+  answer_en   String   @db.LongText
+  answer_cn   String   @db.LongText
+  created_at  DateTime @default(now())
+
+  @@map("faq")
+}
+
+// ============================================
+// ACADEMIC MODELS (Multi-Bahasa)
+// ============================================
+
+model prodi {
+  id       String   @id @default(uuid())
+  nama     String
+  nama_en  String
+  nama_cn  String
+  slug     String   @unique
+  link     String?
+  visi     String   @db.LongText
+  visi_en  String   @db.LongText
+  visi_cn  String   @db.LongText
+  misi     String   @db.LongText
+  misi_en  String   @db.LongText
+  misi_cn  String   @db.LongText
+
+  @@map("prodi")
+}
+
+model dosen {
+  id            String   @id @default(uuid())
+  nama          String
+  nama_en       String
+  nama_cn       String
+  nik           String
+  foto          String?
+  jenis_dosen   String
+  kepakaran     String?
+  kepakaran_en  String?
+  kepakaran_cn  String?
+  create_at     DateTime @default(now())
+
+  @@map("dosen")
+}
+
+// ============================================
+// THEME MODELS
+// ============================================
+
+model theme {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  isActive      Boolean  @default(false)
+  primaryColor  String
+  primaryHex    String
+  secondaryColor String
+  secondaryHex  String
+  accentColor   String
+  accentHex     String
+  headerBg      String
+  headerBgHex   String
+  headerText    String
+  headerTextHex String
+  sidebarBg     String
+  sidebarBgHex  String
+  sidebarText   String
+  sidebarTextHex String
+  sidebarActive String
+  sidebarActiveHex String
+  bodyBg        String
+  bodyBgHex     String
+  bodyText      String
+  bodyTextHex   String
+  cardBg        String
+  cardBgHex     String
+  cardBorder    String
+  cardBorderHex String
+  buttonPrimary String
+  buttonPrimaryHex String
+  buttonSecondary String
+  buttonSecondaryHex String
+  footerBg      String
+  footerBgHex   String
+  footerText    String
+  footerTextHex String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("themes")
+}
+
+// ============================================
+// IDENTITY & ANALYTICS MODELS
+// ============================================
+
+model identitas {
+  id    String @id @default(uuid())
+  name  String @unique
+  value String
+
+  @@map("identitas")
+}
+
+model visit {
+  id        Int      @id @default(autoincrement())
+  ipAddress String
+  userAgent String
+  url       String
+  visitedAt DateTime @default(now())
+
+  @@map("visits")
+}
