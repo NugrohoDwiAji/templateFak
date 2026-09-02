@@ -13,6 +13,7 @@ import {
   setActiveTheme,
   type ThemeData,
 } from "@/actions/theme.actions";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2, Check, Palette } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { useMounted } from "@/hooks/useMounted";
@@ -36,6 +37,7 @@ export default function ThemePage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<ThemeData | null>(null);
+  const [saving, setSaving] = useState(false);
   const dispatch = useAppDispatch();
 
   const fetchThemes = async () => {
@@ -51,29 +53,49 @@ export default function ThemePage() {
   }, []);
 
   const handleCreate = async (data: Omit<ThemeData, "id" | "isActive">) => {
-    await createTheme(data);
-    setModalOpen(false);
-    fetchThemes();
+    setSaving(true);
+    try {
+      await createTheme(data);
+      setModalOpen(false);
+      fetchThemes();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleUpdate = async (data: Omit<ThemeData, "id" | "isActive">) => {
     if (!editingTheme) return;
-    await updateTheme(editingTheme.id, data);
-    setModalOpen(false);
-    setEditingTheme(null);
-    fetchThemes();
+    setSaving(true);
+    try {
+      await updateTheme(editingTheme.id, data);
+      setModalOpen(false);
+      setEditingTheme(null);
+      fetchThemes();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Yakin ingin menghapus tema ini?")) return;
-    await deleteTheme(id);
-    fetchThemes();
+    setSaving(true);
+    try {
+      await deleteTheme(id);
+      fetchThemes();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSetActive = async (theme: ThemeData) => {
-    await setActiveTheme(theme.id);
-    dispatch(setTheme(serializeTheme(theme)));
-    fetchThemes();
+    setSaving(true);
+    try {
+      await setActiveTheme(theme.id);
+      dispatch(setTheme(serializeTheme(theme)));
+      fetchThemes();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const openCreateModal = () => {
@@ -220,6 +242,8 @@ export default function ThemePage() {
           }}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan tema..." />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { ProdiForm } from "@/components/features/prodi/ProdiForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getProdi,
   createProdi,
@@ -15,6 +14,7 @@ import {
   deleteProdi,
 } from "@/actions/prodi.actions";
 import type { Prodi } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
 
 export default function ProdiPage() {
@@ -24,6 +24,7 @@ export default function ProdiPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProdi, setEditingProdi] = useState<Prodi | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fetchProdi = async () => {
     const result = await getProdi();
@@ -60,19 +61,24 @@ export default function ProdiPage() {
     misi_en: string;
     misi_cn: string;
   }) => {
-    let result;
-    if (editingProdi) {
-      result = await updateProdi(editingProdi.id, data);
-    } else {
-      result = await createProdi(data);
-    }
+    setSaving(true);
+    try {
+      let result;
+      if (editingProdi) {
+        result = await updateProdi(editingProdi.id, data);
+      } else {
+        result = await createProdi(data);
+      }
 
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan program studi");
-    }
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan program studi");
+      }
 
-    setModalOpen(false);
-    fetchProdi();
+      setModalOpen(false);
+      fetchProdi();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -93,15 +99,6 @@ export default function ProdiPage() {
           Tambah Prodi
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Program Studi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Prodi" identitasKey="banner_prodi" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -177,6 +174,8 @@ export default function ProdiPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan program studi..." />
     </div>
   );
 }

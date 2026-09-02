@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PengumumanSchema, type PengumumanInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getPengumuman() {
   try {
@@ -23,10 +24,7 @@ export async function createPengumuman(data: PengumumanInput) {
     revalidatePath("/pengumuman");
     return { success: true, data: pengumuman };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat pengumuman" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 

@@ -101,6 +101,8 @@ model berita {
 model berkas {
   id       String   @id @default(uuid())
   title    String
+  title_en String
+  title_cn String
   filepath String
   uploadat DateTime @default(now())
 
@@ -221,7 +223,7 @@ model theme {
 model identitas {
   id    String @id @default(uuid())
   name  String @unique
-  value String
+  value String @db.LongText
 
   @@map("identitas")
 }

@@ -34,11 +34,12 @@ const navigation: NavItem[] = [
       { name: { id: "Visi & Misi", en: "Vision & Mission", cn: "愿景与使命" }, href: "/visimisi" },
       { name: { id: "Struktur Organisasi", en: "Organizational Structure", cn: "组织结构" }, href: "/strukturorganisasi" },
       { name: { id: "Informasi", en: "Information", cn: "信息" }, href: "/informasi" },
+      { name: { id: "Program Studi", en: "Study Programs", cn: "专业" }, href: "/prodi" },
+      { name: { id: "Dosen", en: "Lecturers", cn: "讲师" }, href: "/dosen" },
     ],
   },
   { name: { id: "Berita", en: "News", cn: "新闻" }, href: "/berita" },
   { name: { id: "Pengumuman", en: "Announcements", cn: "公告" }, href: "/pengumuman" },
-  { name: { id: "Dosen", en: "Lecturers", cn: "讲师" }, href: "/dosen" },
   { name: { id: "Unduhan", en: "Downloads", cn: "下载" }, href: "/unduhan" },
   { name: { id: "FAQ", en: "FAQ", cn: "常见问题" }, href: "/faq" },
 ];
@@ -51,7 +52,7 @@ function Header() {
   const { data: identitas } = useIdentitas();
   const { current } = useLanguage();
 
-  const namaFakultas = identitas.nama_fakultas || "";
+  const namaFakultas = identitas[`nama_fakultas_${current}`] || identitas.nama_fakultas || "";
 
   return (
     <header

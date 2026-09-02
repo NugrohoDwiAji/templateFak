@@ -55,6 +55,8 @@ export interface Pengumuman {
 export interface Berkas {
   id: string;
   title: string;
+  title_en: string;
+  title_cn: string;
   filepath: string;
   uploadat: Date | string;
 }
@@ -103,4 +105,16 @@ export interface Identitas {
   id: string;
   name: string;
   value: string;
+}
+
+export interface ProfilFakultas {
+  nama: string;
+  tagline: string;
+  tentang: string;
+  gambar: string;
+  alamat: string;
+  telepon: string;
+  email: string;
+  visi: string;
+  misi: string;
 }

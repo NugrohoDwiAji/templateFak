@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { BeritaForm } from "@/components/features/berita/BeritaForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getBerita,
   createBerita,
@@ -17,6 +16,7 @@ import {
 import { uploadToStorage } from "@/actions/upload.actions";
 import { formatDate } from "@/lib/utils";
 import type { Berita } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
 
 export default function BeritaPage() {
@@ -26,6 +26,7 @@ export default function BeritaPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBerita, setEditingBerita] = useState<Berita | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fetchBerita = async () => {
     const result = await getBerita();
@@ -58,27 +59,32 @@ export default function BeritaPage() {
     description_cn: string;
     file?: File;
   }) => {
-    let filepath: string | undefined;
+    setSaving(true);
+    try {
+      let filepath: string | undefined;
 
-    if (data.file) {
-      filepath = await uploadToStorage(data.file, "berita");
+      if (data.file) {
+        filepath = await uploadToStorage(data.file, "berita");
+      }
+
+      const { file: _file, ...formData } = data;
+
+      let result;
+      if (editingBerita) {
+        result = await updateBerita(editingBerita.id, formData, filepath ?? editingBerita.filepath);
+      } else {
+        result = await createBerita(formData, filepath);
+      }
+
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan berita");
+      }
+
+      setModalOpen(false);
+      fetchBerita();
+    } finally {
+      setSaving(false);
     }
-
-    const { file: _file, ...formData } = data;
-
-    let result;
-    if (editingBerita) {
-      result = await updateBerita(editingBerita.id, formData, filepath ?? editingBerita.filepath);
-    } else {
-      result = await createBerita(formData, filepath);
-    }
-
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan berita");
-    }
-
-    setModalOpen(false);
-    fetchBerita();
   };
 
   const handleDelete = async (id: string) => {
@@ -99,15 +105,6 @@ export default function BeritaPage() {
           Tambah Berita
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Berita</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Berita" identitasKey="banner_berita" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -183,6 +180,8 @@ export default function BeritaPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan berita..." />
     </div>
   );
 }

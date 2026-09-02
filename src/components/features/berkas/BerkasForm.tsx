@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { FileDropZone } from "@/components/ui/FileDropZone";
+import { MultiLangInput } from "@/components/features/language/MultiLangInput";
 
 interface BerkasFormProps {
-  onSubmit: (data: { title: string; file: File }) => Promise<void>;
+  onSubmit: (data: {
+    title: string;
+    title_en: string;
+    title_cn: string;
+    file: File;
+  }) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -14,7 +19,11 @@ function BerkasForm({ onSubmit, onCancel }: BerkasFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    title_en: "",
+    title_cn: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +31,7 @@ function BerkasForm({ onSubmit, onCancel }: BerkasFormProps) {
     setLoading(true);
     setError(null);
     try {
-      await onSubmit({ title, file });
+      await onSubmit({ ...form, file });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan data");
     } finally {
@@ -37,15 +46,24 @@ function BerkasForm({ onSubmit, onCancel }: BerkasFormProps) {
           {error}
         </div>
       )}
-      <Input
+      <MultiLangInput
         label="Judul"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
+        value_id={form.title}
+        value_en={form.title_en}
+        value_cn={form.title_cn}
+        onChange={(lang, value) =>
+          setForm((prev) => ({
+            ...prev,
+            [`title${lang === "id" ? "" : `_${lang}`}`]: value,
+          }))
+        }
       />
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">File</label>
+        <p className="text-xs text-gray-500">
+          Format yang diterima: <strong>PDF, DOC, DOCX, XLS, XLSX</strong> | Maksimal <strong>2MB</strong>
+        </p>
         <FileDropZone
           onFile={setFile}
           currentFile={file}
@@ -57,6 +75,7 @@ function BerkasForm({ onSubmit, onCancel }: BerkasFormProps) {
             "application/vnd.ms-excel": [".xls"],
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
           }}
+          maxSize={2 * 1024 * 1024}
         />
       </div>
 

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { BerkasSchema, type BerkasInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getBerkas() {
   try {
@@ -14,16 +16,17 @@ export async function getBerkas() {
   }
 }
 
-export async function createBerkas(title: string, filepath: string) {
+export async function createBerkas(data: BerkasInput, filepath: string) {
   try {
+    const validated = BerkasSchema.parse(data);
     const berkas = await prisma.berkas.create({
-      data: { title, filepath },
+      data: { ...validated, filepath },
     });
     revalidatePath("/admin/berkas");
     revalidatePath("/unduhan");
     return { success: true, data: berkas };
-  } catch {
-    return { success: false, error: "Gagal membuat berkas" };
+  } catch (error) {
+    return { success: false, error: formatZodError(error) };
   }
 }
 

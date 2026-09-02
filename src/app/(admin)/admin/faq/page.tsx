@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { FaqForm } from "@/components/features/faq/FaqForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getFaq,
   createFaq,
@@ -15,6 +14,7 @@ import {
   deleteFaq,
 } from "@/actions/faq.actions";
 import type { Faq } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function FaqPage() {
@@ -24,6 +24,7 @@ export default function FaqPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<Faq | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fetchFaq = async () => {
     const result = await getFaq();
@@ -55,19 +56,24 @@ export default function FaqPage() {
     answer_en: string;
     answer_cn: string;
   }) => {
-    let result;
-    if (editingFaq) {
-      result = await updateFaq(editingFaq.id, data);
-    } else {
-      result = await createFaq(data);
-    }
+    setSaving(true);
+    try {
+      let result;
+      if (editingFaq) {
+        result = await updateFaq(editingFaq.id, data);
+      } else {
+        result = await createFaq(data);
+      }
 
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan FAQ");
-    }
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan FAQ");
+      }
 
-    setModalOpen(false);
-    fetchFaq();
+      setModalOpen(false);
+      fetchFaq();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -88,15 +94,6 @@ export default function FaqPage() {
           Tambah FAQ
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman FAQ</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner FAQ" identitasKey="banner_faq" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -155,6 +152,8 @@ export default function FaqPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan FAQ..." />
     </div>
   );
 }

@@ -61,11 +61,15 @@ function PengumumanForm({ onSubmit, onCancel }: PengumumanFormProps) {
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">File</label>
+        <p className="text-xs text-gray-500">
+          Format yang diterima: <strong>PDF</strong> | Maksimal <strong>2MB</strong>
+        </p>
         <FileDropZone
           onFile={setFile}
           currentFile={file}
           onClear={() => setFile(null)}
           accept={{ "application/pdf": [".pdf"] }}
+          maxSize={2 * 1024 * 1024}
         />
       </div>
 

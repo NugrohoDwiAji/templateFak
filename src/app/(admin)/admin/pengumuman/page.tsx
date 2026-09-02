@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { PengumumanForm } from "@/components/features/pengumuman/PengumumanForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getPengumuman,
   createPengumuman,
@@ -16,6 +15,7 @@ import {
 import { uploadToStorage } from "@/actions/upload.actions";
 import { formatDate } from "@/lib/utils";
 import type { Pengumuman } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Trash2, FileText } from "lucide-react";
 
 export default function PengumumanPage() {
@@ -24,6 +24,7 @@ export default function PengumumanPage() {
   const [pengumuman, setPengumuman] = useState<Pengumuman[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchPengumuman = async () => {
     const result = await getPengumuman();
@@ -43,16 +44,21 @@ export default function PengumumanPage() {
     title_cn: string;
     file: File;
   }) => {
-    const filepath = await uploadToStorage(data.file, "pengumuman");
-    const { file: _file, ...formData } = data;
-    const result = await createPengumuman({ ...formData, file_path: filepath });
+    setSaving(true);
+    try {
+      const filepath = await uploadToStorage(data.file, "pengumuman");
+      const { file: _file, ...formData } = data;
+      const result = await createPengumuman({ ...formData, file_path: filepath });
 
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan pengumuman");
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan pengumuman");
+      }
+
+      setModalOpen(false);
+      fetchPengumuman();
+    } finally {
+      setSaving(false);
     }
-
-    setModalOpen(false);
-    fetchPengumuman();
   };
 
   const handleDelete = async (id: string) => {
@@ -73,15 +79,6 @@ export default function PengumumanPage() {
           Tambah Pengumuman
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Pengumuman</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Pengumuman" identitasKey="banner_pengumuman" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -146,6 +143,8 @@ export default function PengumumanPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan pengumuman..." />
     </div>
   );
 }

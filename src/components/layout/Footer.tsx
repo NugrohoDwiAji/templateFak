@@ -5,14 +5,16 @@ import { Mail, Phone, MapPin } from "lucide-react";
 import { useAppSelector } from "@/store/store";
 import { useMounted } from "@/hooks/useMounted";
 import { useIdentitas } from "@/hooks/useIdentitas";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function Footer() {
   const theme = useAppSelector((state) => state.theme.current);
   const mounted = useMounted();
   const { data: identitas } = useIdentitas();
+  const { current } = useLanguage();
 
-  const namaFakultas = identitas.nama_fakultas || "";
-  const tagline = identitas.tagline || "";
+  const namaFakultas = identitas[`nama_fakultas_${current}`] || identitas.nama_fakultas || "";
+  const tagline = identitas[`tagline_${current}`] || identitas.tagline || "";
   const alamat = identitas.alamat_fakultas || "";
   const telepon = identitas.telepon_fakultas || "";
   const email = identitas.email_fakultas || "";

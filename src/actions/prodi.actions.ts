@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { ProdiSchema, type ProdiInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getProdi() {
   try {
@@ -31,10 +32,7 @@ export async function createProdi(data: ProdiInput) {
     revalidatePath("/prodi");
     return { success: true, data: prodi };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat prodi" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
@@ -49,10 +47,7 @@ export async function updateProdi(id: string, data: ProdiInput) {
     revalidatePath("/prodi");
     return { success: true, data: prodi };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal memperbarui prodi" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 

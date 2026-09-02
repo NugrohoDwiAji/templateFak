@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DosenSchema, type DosenInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 import type { Prisma } from "@prisma/client";
 
 export async function getDosen() {
@@ -39,10 +40,7 @@ export async function createDosen(data: DosenInput) {
     revalidatePath("/dosen");
     return { success: true, data: dosen };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat dosen" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
@@ -61,10 +59,7 @@ export async function updateDosen(id: string, data: DosenInput) {
     revalidatePath("/dosen");
     return { success: true, data: dosen };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal memperbarui dosen" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 

@@ -13,6 +13,7 @@ export default function VisiMisiPage() {
   const { data: identitas } = useIdentitas();
 
   const namaFakultas = identitas.nama_fakultas || "";
+  const banner = identitas.banner_visimisi || "";
   const visi = identitas[`visi_fakultas_${current}`] || identitas.visi_fakultas_id || "";
   const misiRaw = identitas[`misi_fakultas_${current}`] || identitas.misi_fakultas_id || "";
   const misiItems = misiRaw
@@ -21,8 +22,30 @@ export default function VisiMisiPage() {
 
   return (
     <div style={{ backgroundColor: mounted ? theme.bodyBgHex : "#f8fafc" }}>
-      <section style={{ background: mounted ? `linear-gradient(135deg, ${theme.primaryHex}, ${theme.primaryHex}cc, ${theme.primaryHex}88)` : "linear-gradient(135deg, #2563eb, rgba(37, 99, 235, 0.8), rgba(37, 99, 235, 0.533))" }} className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section
+        className="relative overflow-hidden py-16"
+        style={{
+          background: banner
+            ? undefined
+            : mounted
+              ? `linear-gradient(135deg, ${theme.primaryHex}, ${theme.primaryHex}cc, ${theme.primaryHex}88)`
+              : "linear-gradient(135deg, #2563eb, rgba(37, 99, 235, 0.8), rgba(37, 99, 235, 0.533))",
+        }}
+      >
+        {banner && (
+          <img
+            src={banner}
+            alt="Banner Visi & Misi"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: banner ? "rgba(0,0,0,0.4)" : undefined,
+          }}
+        />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">
             {current === "id"
               ? "Visi & Misi"

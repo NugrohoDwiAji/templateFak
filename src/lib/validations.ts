@@ -40,7 +40,8 @@ export type PengumumanInput = z.infer<typeof PengumumanSchema>;
 
 export const BerkasSchema = z.object({
   title: z.string().min(1, "Judul wajib diisi"),
-  filepath: z.string().min(1, "File wajib diupload"),
+  title_en: z.string().min(1, "Title (EN) wajib diisi"),
+  title_cn: z.string().min(1, "Title (CN) wajib diisi"),
 });
 
 export type BerkasInput = z.infer<typeof BerkasSchema>;

@@ -14,6 +14,7 @@ interface MultiLangInputProps {
   onChange: (lang: "id" | "en" | "cn", value: string) => void;
   type?: "input" | "textarea";
   placeholder?: string;
+  maxLength?: number;
 }
 
 function MultiLangInput({
@@ -23,6 +24,7 @@ function MultiLangInput({
   value_cn,
   onChange,
   type = "input",
+  maxLength,
 }: MultiLangInputProps) {
   const language = useAppSelector((state) => state.language.current);
   const [activeTab, setActiveTab] = useState<"id" | "en" | "cn">(language);
@@ -52,7 +54,18 @@ function MultiLangInput({
                 onChange(lang, e.target.value)
               }
               placeholder={`${label} (${lang.toUpperCase()})`}
+              maxLength={maxLength}
             />
+            {maxLength && (
+              <div className="mt-1 flex items-center justify-between">
+                <p className={`text-xs ${(values[lang] || "").length > maxLength ? "text-red-600" : "text-gray-500"}`}>
+                  {(values[lang] || "").length}/{maxLength} karakter
+                </p>
+                {(values[lang] || "").length > maxLength && (
+                  <p className="text-xs text-red-600">Melebihi batas maksimal!</p>
+                )}
+              </div>
+            )}
           </TabsContent>
         ))}
       </Tabs>

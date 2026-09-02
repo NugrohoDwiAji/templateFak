@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { BerkasForm } from "@/components/features/berkas/BerkasForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getBerkas,
   createBerkas,
@@ -16,6 +15,7 @@ import {
 import { uploadToStorage } from "@/actions/upload.actions";
 import { formatDate } from "@/lib/utils";
 import type { Berkas } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Trash2, Download } from "lucide-react";
 
 export default function BerkasPage() {
@@ -24,6 +24,7 @@ export default function BerkasPage() {
   const [berkas, setBerkas] = useState<Berkas[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchBerkas = async () => {
     const result = await getBerkas();
@@ -37,16 +38,27 @@ export default function BerkasPage() {
     fetchBerkas();
   }, []);
 
-  const handleSubmit = async (data: { title: string; file: File }) => {
-    const filepath = await uploadToStorage(data.file, "berkas");
-    const result = await createBerkas(data.title, filepath);
+  const handleSubmit = async (data: {
+    title: string;
+    title_en: string;
+    title_cn: string;
+    file: File;
+  }) => {
+    setSaving(true);
+    try {
+      const filepath = await uploadToStorage(data.file, "berkas");
+      const { file: _file, ...formData } = data;
+      const result = await createBerkas(formData, filepath);
 
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan berkas");
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan berkas");
+      }
+
+      setModalOpen(false);
+      fetchBerkas();
+    } finally {
+      setSaving(false);
     }
-
-    setModalOpen(false);
-    fetchBerkas();
   };
 
   const handleDelete = async (id: string) => {
@@ -67,15 +79,6 @@ export default function BerkasPage() {
           Tambah Berkas
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Unduhan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Unduhan" identitasKey="banner_unduhan" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -140,6 +143,8 @@ export default function BerkasPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan berkas..." />
     </div>
   );
 }

@@ -6,27 +6,31 @@ import { useMounted } from "@/hooks/useMounted";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { MultiLangInput } from "@/components/features/language/MultiLangInput";
 import { getIdentitas, setIdentitas } from "@/actions/identitas.actions";
+import { uploadToStorage } from "@/actions/upload.actions";
 import { toast } from "sonner";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Save, Building2, Image, Phone, Eye, Target } from "lucide-react";
 
 interface IdentitasField {
   key: string;
   label: string;
-  type: "text" | "textarea" | "banner";
+  type: "text" | "textarea" | "banner" | "input";
+  maxLength?: number;
 }
 
 const informasiUmumFields: IdentitasField[] = [
-  { key: "nama_fakultas", label: "Nama Fakultas", type: "text" },
-  { key: "tagline", label: "Tagline", type: "text" },
-  { key: "tentang_fakultas", label: "Tentang Fakultas", type: "textarea" },
+  { key: "nama_fakultas", label: "Nama Fakultas", type: "input", maxLength: 100 },
+  { key: "tagline", label: "Tagline", type: "input", maxLength: 200 },
+  { key: "tentang_fakultas", label: "Tentang Fakultas", type: "textarea", maxLength: 2000 },
 ];
 
 const kontakFields: IdentitasField[] = [
-  { key: "email_fakultas", label: "Email", type: "text" },
-  { key: "telepon_fakultas", label: "Telepon", type: "text" },
-  { key: "alamat_fakultas", label: "Alamat", type: "textarea" },
-  { key: "jam_operasional", label: "Jam Operasional", type: "textarea" },
+  { key: "email_fakultas", label: "Email", type: "text", maxLength: 100 },
+  { key: "telepon_fakultas", label: "Telepon", type: "text", maxLength: 20 },
+  { key: "alamat_fakultas", label: "Alamat", type: "textarea", maxLength: 500 },
+  { key: "jam_operasional", label: "Jam Operasional", type: "textarea", maxLength: 200 },
 ];
 
 interface VisiMisiTab {
@@ -41,6 +45,7 @@ const visiMisiTabs: VisiMisiTab[] = [
 ];
 
 const bannerFields: IdentitasField[] = [
+  { key: "banner_landing", label: "Banner Landing Page", type: "banner" },
   { key: "gambar_tentang", label: "Gambar Tentang Fakultas", type: "banner" },
   { key: "banner_berita", label: "Banner Berita", type: "banner" },
   { key: "banner_pengumuman", label: "Banner Pengumuman", type: "banner" },
@@ -49,14 +54,25 @@ const bannerFields: IdentitasField[] = [
   { key: "banner_prodi", label: "Banner Program Studi", type: "banner" },
   { key: "banner_unduhan", label: "Banner Unduhan", type: "banner" },
   { key: "banner_struktur", label: "Banner Struktur Organisasi", type: "banner" },
+  { key: "banner_visimisi", label: "Banner Visi & Misi", type: "banner" },
 ];
 
-const allTextFields = [...informasiUmumFields, ...kontakFields];
+const allTextFields = [
+  ...informasiUmumFields.map((f) => f.key),
+  ...informasiUmumFields.map((f) => `${f.key}_en`),
+  ...informasiUmumFields.map((f) => `${f.key}_cn`),
+  ...kontakFields.map((f) => f.key),
+];
 
 interface VisiMisiTabsProps {
   values: Record<string, string>;
   setValues: (v: Record<string, string>) => void;
 }
+
+const visiMisiLimits = {
+  visi: 1000,
+  misi: 2000,
+};
 
 function VisiMisiTabs({ values, setValues }: VisiMisiTabsProps) {
   const [activeTab, setActiveTab] = useState("id");
@@ -88,8 +104,17 @@ function VisiMisiTabs({ values, setValues }: VisiMisiTabsProps) {
             onChange={(e) => setValues({ ...values, [`visi_fakultas_${activeTab}`]: e.target.value })}
             placeholder="Masukkan visi"
             rows={4}
+            maxLength={visiMisiLimits.visi}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
+          <div className="mt-1 flex items-center justify-between">
+            <p className={`text-xs ${(values[`visi_fakultas_${activeTab}`] || "").length > visiMisiLimits.visi ? "text-red-600" : "text-gray-500"}`}>
+              {(values[`visi_fakultas_${activeTab}`] || "").length}/{visiMisiLimits.visi} karakter
+            </p>
+            {(values[`visi_fakultas_${activeTab}`] || "").length > visiMisiLimits.visi && (
+              <p className="text-xs text-red-600">Melebihi batas maksimal!</p>
+            )}
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -100,8 +125,17 @@ function VisiMisiTabs({ values, setValues }: VisiMisiTabsProps) {
             onChange={(e) => setValues({ ...values, [`misi_fakultas_${activeTab}`]: e.target.value })}
             placeholder="Masukkan satu misi per baris"
             rows={6}
+            maxLength={visiMisiLimits.misi}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
+          <div className="mt-1 flex items-center justify-between">
+            <p className={`text-xs ${(values[`misi_fakultas_${activeTab}`] || "").length > visiMisiLimits.misi ? "text-red-600" : "text-gray-500"}`}>
+              {(values[`misi_fakultas_${activeTab}`] || "").length}/{visiMisiLimits.misi} karakter
+            </p>
+            {(values[`misi_fakultas_${activeTab}`] || "").length > visiMisiLimits.misi && (
+              <p className="text-xs text-red-600">Melebihi batas maksimal!</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -119,6 +153,8 @@ export default function IdentitasPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchIdentitas() {
@@ -136,10 +172,51 @@ export default function IdentitasPage() {
   }, []);
 
   async function handleSave() {
+    const warnings: string[] = [];
+
+    if ((values.nama_fakultas || "").length > 100) {
+      warnings.push("Nama Fakultas melebihi 100 karakter");
+    }
+    if ((values.tagline || "").length > 200) {
+      warnings.push("Tagline melebihi 200 karakter");
+    }
+    if ((values.tentang_fakultas || "").length > 2000) {
+      warnings.push("Tentang Fakultas melebihi 2000 karakter");
+    }
+    if ((values.email_fakultas || "").length > 100) {
+      warnings.push("Email melebihi 100 karakter");
+    }
+    if ((values.telepon_fakultas || "").length > 20) {
+      warnings.push("Telepon melebihi 20 karakter");
+    }
+    if ((values.alamat_fakultas || "").length > 500) {
+      warnings.push("Alamat melebihi 500 karakter");
+    }
+    if ((values.jam_operasional || "").length > 200) {
+      warnings.push("Jam Operasional melebihi 200 karakter");
+    }
+
+    const visiMisiKeys = [
+      "visi_fakultas_id", "visi_fakultas_en", "visi_fakultas_cn",
+      "misi_fakultas_id", "misi_fakultas_en", "misi_fakultas_cn",
+    ];
+    for (const key of visiMisiKeys) {
+      const limit = key.startsWith("visi") ? 1000 : 2000;
+      if ((values[key] || "").length > limit) {
+        const label = key.replace("_fakultas_", " ").replace("_", " ");
+        warnings.push(`${label} melebihi ${limit} karakter`);
+      }
+    }
+
+    if (warnings.length > 0) {
+      toast.warning(warnings.join(", "));
+      return;
+    }
+
     setSaving(true);
     try {
       const allFieldKeys = [
-        ...allTextFields.map((f) => f.key),
+        ...allTextFields,
         ...bannerFields.map((f) => f.key),
         ...visiMisiFieldKeys,
       ];
@@ -185,26 +262,19 @@ export default function IdentitasPage() {
           </div>
           <div className="space-y-4">
             {informasiUmumFields.map((field) => (
-              <div key={field.key}>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  {field.label}
-                </label>
-                {field.type === "textarea" ? (
-                  <textarea
-                    value={values[field.key] || ""}
-                    onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-                    placeholder={`Masukkan ${field.label.toLowerCase()}`}
-                    rows={4}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                ) : (
-                  <Input
-                    value={values[field.key] || ""}
-                    onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-                    placeholder={`Masukkan ${field.label.toLowerCase()}`}
-                  />
-                )}
-              </div>
+              <MultiLangInput
+                key={field.key}
+                label={field.label}
+                value_id={values[field.key] || ""}
+                value_en={values[`${field.key}_en`] || ""}
+                value_cn={values[`${field.key}_cn`] || ""}
+                onChange={(lang, value) => {
+                  const suffix = lang === "id" ? "" : `_${lang}`;
+                  setValues({ ...values, [`${field.key}${suffix}`]: value });
+                }}
+                type={field.type === "textarea" ? "textarea" : "input"}
+                maxLength={field.maxLength}
+              />
             ))}
           </div>
         </CardContent>
@@ -223,19 +293,45 @@ export default function IdentitasPage() {
                   {field.label}
                 </label>
                 {field.type === "textarea" ? (
-                  <textarea
-                    value={values[field.key] || ""}
-                    onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-                    placeholder={`Masukkan ${field.label.toLowerCase()}`}
-                    rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
+                  <>
+                    <textarea
+                      value={values[field.key] || ""}
+                      onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+                      placeholder={`Masukkan ${field.label.toLowerCase()}`}
+                      rows={3}
+                      maxLength={field.maxLength}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    {field.maxLength && (
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className={`text-xs ${(values[field.key] || "").length > field.maxLength ? "text-red-600" : "text-gray-500"}`}>
+                          {(values[field.key] || "").length}/{field.maxLength} karakter
+                        </p>
+                        {(values[field.key] || "").length > field.maxLength && (
+                          <p className="text-xs text-red-600">Melebihi batas maksimal!</p>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <Input
-                    value={values[field.key] || ""}
-                    onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
-                    placeholder={`Masukkan ${field.label.toLowerCase()}`}
-                  />
+                  <>
+                    <Input
+                      value={values[field.key] || ""}
+                      onChange={(e) => setValues({ ...values, [field.key]: e.target.value })}
+                      placeholder={`Masukkan ${field.label.toLowerCase()}`}
+                      maxLength={field.maxLength}
+                    />
+                    {field.maxLength && (
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className={`text-xs ${(values[field.key] || "").length > field.maxLength ? "text-red-600" : "text-gray-500"}`}>
+                          {(values[field.key] || "").length}/{field.maxLength} karakter
+                        </p>
+                        {(values[field.key] || "").length > field.maxLength && (
+                          <p className="text-xs text-red-600">Melebihi batas maksimal!</p>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -261,8 +357,13 @@ export default function IdentitasPage() {
             <h2 className="text-lg font-semibold">Banner Halaman</h2>
           </div>
           <p className="mb-4 text-sm text-gray-500">
-            Ukuran yang disarankan: <strong>1920 x 400 px</strong> (rasio 1920:400)
+            Ukuran banner: <strong>1920 x 400 px</strong> | Banner Landing Page: <strong>1920 x 600 px</strong> | Maksimal <strong>2MB</strong>
           </p>
+          {uploadError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {uploadError}
+            </div>
+          )}
           <div className="grid gap-6 sm:grid-cols-2">
             {bannerFields.map((field) => (
               <div key={field.key}>
@@ -285,6 +386,10 @@ export default function IdentitasPage() {
                       </svg>
                     </button>
                   </div>
+                ) : uploadingKey === field.key ? (
+                  <div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+                  </div>
                 ) : (
                   <label className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500">
                     <svg className="mb-2 h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,23 +403,21 @@ export default function IdentitasPage() {
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const formData = new FormData();
-                        formData.append("file", file);
-                        formData.append("category", "banner");
+
+                        if (file.size > 2 * 1024 * 1024) {
+                          setUploadError("Ukuran file maksimal 2MB");
+                          return;
+                        }
+
+                        setUploadError(null);
+                        setUploadingKey(field.key);
                         try {
-                          const res = await fetch("/api/upload", {
-                            method: "POST",
-                            body: formData,
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setValues({ ...values, [field.key]: data.data.url });
-                            toast.success(`${field.label} berhasil diupload`);
-                          } else {
-                            toast.error(data.error || "Gagal upload");
-                          }
+                          const url = await uploadToStorage(file, "banner");
+                          setValues({ ...values, [field.key]: url });
                         } catch {
-                          toast.error("Gagal upload banner");
+                          setUploadError("Gagal upload banner");
+                        } finally {
+                          setUploadingKey(null);
                         }
                       }}
                     />
@@ -325,6 +428,8 @@ export default function IdentitasPage() {
           </div>
         </CardContent>
       </Card>
+
+      <LoadingOverlay open={saving} message="Menyimpan identitas..." />
     </div>
   );
 }

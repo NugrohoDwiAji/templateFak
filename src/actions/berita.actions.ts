@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BeritaSchema, type BeritaInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getBerita() {
   try {
@@ -38,10 +39,7 @@ export async function createBerita(
     revalidatePath("/berita");
     return { success: true, data: berita };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat berita" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
@@ -60,10 +58,7 @@ export async function updateBerita(
     revalidatePath("/berita");
     return { success: true, data: berita };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal memperbarui berita" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 

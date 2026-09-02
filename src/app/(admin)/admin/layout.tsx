@@ -16,7 +16,7 @@ export default function AdminLayout({
     <SessionProvider>
       <div className="flex min-h-screen" style={{ backgroundColor: "var(--theme-body-bg)" }}>
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col lg:ml-64">
           <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
           <main className="flex-1 p-6">{children}</main>
         </div>

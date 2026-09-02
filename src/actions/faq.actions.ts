@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { FaqSchema, type FaqInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getFaq() {
   try {
@@ -23,10 +24,7 @@ export async function createFaq(data: FaqInput) {
     revalidatePath("/faq");
     return { success: true, data: faq };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat FAQ" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
@@ -41,10 +39,7 @@ export async function updateFaq(id: string, data: FaqInput) {
     revalidatePath("/faq");
     return { success: true, data: faq };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal memperbarui FAQ" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 

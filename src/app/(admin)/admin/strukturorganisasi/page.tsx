@@ -6,7 +6,6 @@ import { useMounted } from "@/hooks/useMounted";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { FileDropZone } from "@/components/ui/FileDropZone";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import { uploadToStorage } from "@/actions/upload.actions";
 import { getIdentitasByName, setIdentitas } from "@/actions/identitas.actions";
 import { Upload, Trash2 } from "lucide-react";
@@ -78,15 +77,6 @@ export default function StrukturOrganisasiPage() {
         <h1 className="text-2xl font-bold text-gray-900">Struktur Organisasi</h1>
         <p className="text-gray-600">Kelola gambar struktur organisasi fakultas</p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Struktur Organisasi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Struktur" identitasKey="banner_struktur" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>

@@ -15,6 +15,7 @@ import {
 } from "@/actions/content.actions";
 import { formatDate } from "@/lib/utils";
 import type { Content } from "@/types";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function ContentPage() {
@@ -32,7 +33,7 @@ export default function ContentPage() {
     value_en: "",
     value_cn: "",
   });
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchContents = async () => {
@@ -68,7 +69,7 @@ export default function ContentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
+    setSaving(true);
     setError(null);
     try {
       let result;
@@ -89,7 +90,7 @@ export default function ContentPage() {
         setError(err.message);
       }
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
@@ -200,12 +201,14 @@ export default function ContentPage() {
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Batal
             </Button>
-            <Button type="submit" loading={submitting}>
+            <Button type="submit" loading={saving}>
               {editingContent ? "Perbarui" : "Simpan"}
             </Button>
           </div>
         </form>
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan konten..." />
     </div>
   );
 }

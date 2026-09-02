@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { DosenForm } from "@/components/features/dosen/DosenForm";
-import { BannerUpload } from "@/components/features/banner/BannerUpload";
 import {
   getDosen,
   createDosen,
@@ -18,6 +17,7 @@ import { uploadToStorage } from "@/actions/upload.actions";
 import { formatDate } from "@/lib/utils";
 import type { Dosen } from "@/types";
 import type { DosenInput } from "@/lib/validations";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function DosenPage() {
@@ -27,6 +27,7 @@ export default function DosenPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDosen, setEditingDosen] = useState<Dosen | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fetchDosen = async () => {
     const result = await getDosen();
@@ -61,43 +62,48 @@ export default function DosenPage() {
     kepakaran_cn?: string;
     foto?: File;
   }) => {
-    const { foto: _foto, ...restData } = data;
-    const dosenData: DosenInput = {
-      nama: restData.nama,
-      nik: restData.nik,
-      jenis_dosen: restData.jenis_dosen,
-      nama_en: restData.nama_en || undefined,
-      nama_cn: restData.nama_cn || undefined,
-      kepakaran: restData.kepakaran || undefined,
-      kepakaran_en: restData.kepakaran_en || undefined,
-      kepakaran_cn: restData.kepakaran_cn || undefined,
-    };
+    setSaving(true);
+    try {
+      const { foto: _foto, ...restData } = data;
+      const dosenData: DosenInput = {
+        nama: restData.nama,
+        nik: restData.nik,
+        jenis_dosen: restData.jenis_dosen,
+        nama_en: restData.nama_en || undefined,
+        nama_cn: restData.nama_cn || undefined,
+        kepakaran: restData.kepakaran || undefined,
+        kepakaran_en: restData.kepakaran_en || undefined,
+        kepakaran_cn: restData.kepakaran_cn || undefined,
+      };
 
-    let result;
-    if (editingDosen) {
-      const updateData: DosenInput = { ...dosenData };
-      if (editingDosen.foto) updateData.foto = editingDosen.foto;
-      result = await updateDosen(editingDosen.id, updateData);
-    } else {
-      result = await createDosen(dosenData);
-    }
-
-    if (!result.success) {
-      throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan dosen");
-    }
-
-    if (data.foto && result.data) {
-      const fotoPath = await uploadToStorage(data.foto, "dosen");
-      if (fotoPath) {
-        await updateDosen(result.data.id, {
-          ...dosenData,
-          foto: fotoPath,
-        });
+      let result;
+      if (editingDosen) {
+        const updateData: DosenInput = { ...dosenData };
+        if (editingDosen.foto) updateData.foto = editingDosen.foto;
+        result = await updateDosen(editingDosen.id, updateData);
+      } else {
+        result = await createDosen(dosenData);
       }
-    }
 
-    setModalOpen(false);
-    fetchDosen();
+      if (!result.success) {
+        throw new Error(typeof result.error === "string" ? result.error : "Gagal menyimpan dosen");
+      }
+
+      if (data.foto && result.data) {
+        const fotoPath = await uploadToStorage(data.foto, "dosen");
+        if (fotoPath) {
+          await updateDosen(result.data.id, {
+            ...dosenData,
+            foto: fotoPath,
+          });
+        }
+      }
+
+      setModalOpen(false);
+      fetchDosen();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -118,15 +124,6 @@ export default function DosenPage() {
           Tambah Dosen
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Halaman Dosen</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BannerUpload label="Banner Dosen" identitasKey="banner_dosen" />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -193,6 +190,8 @@ export default function DosenPage() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <LoadingOverlay open={saving} message="Menyimpan dosen..." />
     </div>
   );
 }

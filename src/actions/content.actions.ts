@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { ContentSchema, type ContentInput } from "@/lib/validations";
+import { formatZodError } from "@/lib/utils/validation";
 
 export async function getContents() {
   try {
@@ -42,10 +43,7 @@ export async function createContent(data: ContentInput) {
     revalidatePath("/admin/content");
     return { success: true, data: content };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal membuat konten" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
@@ -59,10 +57,7 @@ export async function updateContent(id: string, data: ContentInput) {
     revalidatePath("/admin/content");
     return { success: true, data: content };
   } catch (error) {
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Gagal memperbarui konten" };
+    return { success: false, error: formatZodError(error) };
   }
 }
 
