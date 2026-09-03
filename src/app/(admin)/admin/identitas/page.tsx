@@ -31,6 +31,12 @@ const kontakFields: IdentitasField[] = [
   { key: "telepon_fakultas", label: "Telepon", type: "text", maxLength: 20 },
   { key: "alamat_fakultas", label: "Alamat", type: "textarea", maxLength: 500 },
   { key: "jam_operasional", label: "Jam Operasional", type: "textarea", maxLength: 200 },
+  { key: "whatsapp", label: "WhatsApp", type: "text", maxLength: 20 },
+  { key: "facebook", label: "Facebook", type: "text", maxLength: 200 },
+  { key: "instagram", label: "Instagram", type: "text", maxLength: 200 },
+  { key: "twitter", label: "Twitter/X", type: "text", maxLength: 200 },
+  { key: "youtube", label: "YouTube", type: "text", maxLength: 200 },
+  { key: "tiktok", label: "TikTok", type: "text", maxLength: 200 },
 ];
 
 interface VisiMisiTab {
