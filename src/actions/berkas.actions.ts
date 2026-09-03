@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BerkasSchema, type BerkasInput } from "@/lib/validations";
 import { formatZodError } from "@/lib/utils/validation";
+import { serializeDates } from "@/lib/utils/serialize";
 
 export async function getBerkas() {
   try {
     const berkas = await prisma.berkas.findMany({
       orderBy: { uploadat: "desc" },
     });
-    return { success: true, data: berkas };
+    return { success: true, data: serializeDates(berkas) };
   } catch {
     return { success: false, error: "Gagal mengambil data berkas" };
   }
@@ -24,7 +25,7 @@ export async function createBerkas(data: BerkasInput, filepath: string) {
     });
     revalidatePath("/admin/berkas");
     revalidatePath("/unduhan");
-    return { success: true, data: berkas };
+    return { success: true, data: serializeDates(berkas) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }

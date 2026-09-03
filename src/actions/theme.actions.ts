@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { serializeDates } from "@/lib/utils/serialize";
 
 export interface ThemeData {
   id: string;
@@ -48,7 +49,7 @@ export async function getThemes() {
     const themes = await prisma.theme.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return { success: true, data: themes };
+    return { success: true, data: serializeDates(themes) };
   } catch {
     return { success: false, error: "Gagal mengambil data tema" };
   }
@@ -59,7 +60,7 @@ export async function getActiveTheme() {
     const theme = await prisma.theme.findFirst({
       where: { isActive: true },
     });
-    return { success: true, data: theme };
+    return { success: true, data: serializeDates(theme) };
   } catch {
     return { success: false, error: "Gagal mengambil tema aktif" };
   }
@@ -70,7 +71,7 @@ export async function getThemeById(id: string) {
     const theme = await prisma.theme.findUnique({
       where: { id },
     });
-    return { success: true, data: theme };
+    return { success: true, data: serializeDates(theme) };
   } catch {
     return { success: false, error: "Gagal mengambil data tema" };
   }
@@ -85,7 +86,7 @@ export async function createTheme(data: Omit<ThemeData, "id" | "isActive">) {
       },
     });
     revalidatePath("/admin/theme");
-    return { success: true, data: theme };
+    return { success: true, data: serializeDates(theme) };
   } catch {
     return { success: false, error: "Gagal membuat tema baru" };
   }
@@ -98,7 +99,7 @@ export async function updateTheme(id: string, data: Partial<ThemeData>) {
       data,
     });
     revalidatePath("/admin/theme");
-    return { success: true, data: theme };
+    return { success: true, data: serializeDates(theme) };
   } catch {
     return { success: false, error: "Gagal mengupdate tema" };
   }
@@ -118,7 +119,7 @@ export async function setActiveTheme(id: string) {
 
     revalidatePath("/admin/theme");
     revalidatePath("/");
-    return { success: true, data: theme };
+    return { success: true, data: serializeDates(theme) };
   } catch {
     return { success: false, error: "Gagal mengaktifkan tema" };
   }

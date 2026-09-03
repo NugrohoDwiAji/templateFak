@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DosenSchema, type DosenInput } from "@/lib/validations";
 import { formatZodError } from "@/lib/utils/validation";
+import { serializeDates } from "@/lib/utils/serialize";
 import type { Prisma } from "@prisma/client";
 
 export async function getDosen() {
@@ -12,7 +13,7 @@ export async function getDosen() {
       orderBy: { create_at: "desc" },
       distinct: ["id"],
     });
-    return { success: true, data: dosen };
+    return { success: true, data: serializeDates(dosen) };
   } catch {
     return { success: false, error: "Gagal mengambil data dosen" };
   }
@@ -22,7 +23,7 @@ export async function getDosenById(id: string) {
   try {
     const dosen = await prisma.dosen.findUnique({ where: { id } });
     if (!dosen) return { success: false, error: "Dosen tidak ditemukan" };
-    return { success: true, data: dosen };
+    return { success: true, data: serializeDates(dosen) };
   } catch {
     return { success: false, error: "Gagal mengambil data dosen" };
   }
@@ -38,7 +39,7 @@ export async function createDosen(data: DosenInput) {
     const dosen = await prisma.dosen.create({ data: cleanData as Prisma.dosenCreateInput });
     revalidatePath("/admin/dosen");
     revalidatePath("/dosen");
-    return { success: true, data: dosen };
+    return { success: true, data: serializeDates(dosen) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }
@@ -57,7 +58,7 @@ export async function updateDosen(id: string, data: DosenInput) {
     });
     revalidatePath("/admin/dosen");
     revalidatePath("/dosen");
-    return { success: true, data: dosen };
+    return { success: true, data: serializeDates(dosen) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }

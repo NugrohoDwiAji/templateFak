@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BeritaSchema, type BeritaInput } from "@/lib/validations";
 import { formatZodError } from "@/lib/utils/validation";
+import { serializeDates } from "@/lib/utils/serialize";
 
 export async function getBerita() {
   try {
     const berita = await prisma.berita.findMany({
       orderBy: { uploadat: "desc" },
     });
-    return { success: true, data: berita };
+    return { success: true, data: serializeDates(berita) };
   } catch {
     return { success: false, error: "Gagal mengambil data berita" };
   }
@@ -20,7 +21,7 @@ export async function getBeritaById(id: string) {
   try {
     const berita = await prisma.berita.findUnique({ where: { id } });
     if (!berita) return { success: false, error: "Berita tidak ditemukan" };
-    return { success: true, data: berita };
+    return { success: true, data: serializeDates(berita) };
   } catch {
     return { success: false, error: "Gagal mengambil data berita" };
   }
@@ -37,7 +38,7 @@ export async function createBerita(
     });
     revalidatePath("/admin/berita");
     revalidatePath("/berita");
-    return { success: true, data: berita };
+    return { success: true, data: serializeDates(berita) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }
@@ -56,7 +57,7 @@ export async function updateBerita(
     });
     revalidatePath("/admin/berita");
     revalidatePath("/berita");
-    return { success: true, data: berita };
+    return { success: true, data: serializeDates(berita) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }

@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { FaqSchema, type FaqInput } from "@/lib/validations";
 import { formatZodError } from "@/lib/utils/validation";
+import { serializeDates } from "@/lib/utils/serialize";
 
 export async function getFaq() {
   try {
     const faq = await prisma.faq.findMany({
       orderBy: { created_at: "desc" },
     });
-    return { success: true, data: faq };
+    return { success: true, data: serializeDates(faq) };
   } catch {
     return { success: false, error: "Gagal mengambil data FAQ" };
   }
@@ -22,7 +23,7 @@ export async function createFaq(data: FaqInput) {
     const faq = await prisma.faq.create({ data: validated });
     revalidatePath("/admin/faq");
     revalidatePath("/faq");
-    return { success: true, data: faq };
+    return { success: true, data: serializeDates(faq) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }
@@ -37,7 +38,7 @@ export async function updateFaq(id: string, data: FaqInput) {
     });
     revalidatePath("/admin/faq");
     revalidatePath("/faq");
-    return { success: true, data: faq };
+    return { success: true, data: serializeDates(faq) };
   } catch (error) {
     return { success: false, error: formatZodError(error) };
   }

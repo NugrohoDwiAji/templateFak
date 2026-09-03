@@ -18,15 +18,20 @@ export async function uploadToStorage(
   file: File,
   category: UploadCategory
 ): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  try {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-  const ext = path.extname(file.name);
-  const filename = `${uuid()}${ext}`;
-  const categoryDir = path.join(UPLOAD_ROOT, category);
+    const ext = path.extname(file.name);
+    const filename = `${uuid()}${ext}`;
+    const categoryDir = path.join(UPLOAD_ROOT, category);
 
-  await fs.mkdir(categoryDir, { recursive: true });
-  await fs.writeFile(path.join(categoryDir, filename), buffer);
+    await fs.mkdir(categoryDir, { recursive: true });
+    await fs.writeFile(path.join(categoryDir, filename), buffer);
 
-  return `/api/files/${category}/${filename}`;
+    return `/api/files/${category}/${filename}`;
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw new Error("Gagal mengupload file");
+  }
 }
